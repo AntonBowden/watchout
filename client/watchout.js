@@ -4,12 +4,13 @@ var options = {
   height: 800,
   numberOfEnemies: 10,
   padding: 20,
-  background: 'darkgrey'
+  background: 'black'
 };
 
 var stats = {
   score: 0,
-  bestScore: 0
+  bestScore: 0,
+  collisions: 0
 };
 
 
@@ -75,25 +76,33 @@ var player = gameBoard.selectAll('player')
 
 
 
-var dragOn = function() {
-    // set position based on mouse position
-  position = [d3.event.x, d3.event.y];
-  redraw();
+var dragOn = function() {  // set position based on mouse position
+  d3.select('.player')
+    .attr('cx', d3.event.x)
+    .attr('cy', d3.event.y);
 };
 
-var redraw = function() {
-    // set circle's position based on internal variable
-  d3.select('.player')
-    .attr('cx', position[0])
-    .attr('cy', position[1]);
-};
 
 d3.behavior.drag()  // capture mouse drag event
     .on('drag', dragOn)
     .call(d3.select('.player'));
 
 
+// Updating Score
 
+setInterval(function() {
+  stats.score++;
+}, 50);
 
+var updateStats = function() {
 
-//var circle = gameBoard.append('circle').attr('cx', 100).attr('cy', 100).attr('r', 30).attr('fill', 'green');
+  d3.select('.current span')
+    .text(stats.score);
+
+  // d3.select('.collisions span')
+  //   .text(stats.collisions);
+};
+
+setInterval(function() {
+  updateStats();
+}, 50);
