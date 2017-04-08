@@ -18,23 +18,44 @@ var gameBoard = d3.select('body')
                   .attr({width: options.width, height: options.height})
                   .style('background-color', options.background);
 
+//Enemies
 var enemiesStorage = [];
-for (var i = 1; i < 20; i++) {
+for (var i = 0; i < 5; i++) {
   enemiesStorage.push(i);
 }
+
+var randomCoord = function() {
+  return Math.random() * options.width;
+};
+
 
 var enemies = gameBoard.selectAll('circle')
               .data(enemiesStorage)
               .enter()
                 .append('circle')
-                .attr('cx', function(d) {
-                  return Math.random() * 800;
-                })
-                .attr('cy', function(d) {
-                  return Math.random() * 800;
-                })
-                .attr('r', 30)
-                .attr('fill', 'green');
+                .attr({cx: randomCoord, cy: randomCoord, r: 30, fill: 'green'});
+
+
+
+
+var move = function() {
+  enemies
+    .transition()
+    .duration(2000)
+    .attr('cx', randomCoord)
+    .attr('cy', randomCoord);
+  setTimeout(move, 2000);
+};
+
+move();
+
+//End of Enemies
+
+//Player
+
+
+
+
 
 
 //var circle = gameBoard.append('circle').attr('cx', 100).attr('cy', 100).attr('r', 30).attr('fill', 'green');
