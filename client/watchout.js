@@ -9,7 +9,7 @@ var options = {
 
 var stats = {
   score: 0,
-  bestScore: 0,
+  highScore: 0,
   collisions: 0
 };
 
@@ -22,7 +22,7 @@ var gameBoard = d3.select('body')
 
 //Enemies
 var enemiesStorage = [];
-for (var i = 0; i < 5; i++) {
+for (var i = 0; i < options.numberOfEnemies; i++) {
   enemiesStorage.push(i);
 }
 
@@ -35,7 +35,8 @@ var enemies = gameBoard.selectAll('enemy')
               .data(enemiesStorage)
               .enter()
                 .append('circle')
-                .attr({cx: randomCoord, cy: randomCoord, r: 30, fill: 'green'});
+                .attr({cx: randomCoord, cy: randomCoord, r: 30, fill: 'green'})
+                .classed('enemies', true);
 
 
 
@@ -45,7 +46,9 @@ var move = function() {
     .transition()
     .duration(2000)
     .attr('cx', randomCoord)
-    .attr('cy', randomCoord);
+    .attr('cy', randomCoord)
+    .tween('collision', collisionDetection)
+    .each('end', move);
   setTimeout(move, 2000);
 };
 
@@ -70,8 +73,7 @@ var player = gameBoard.selectAll('player')
             .data([1]) //, {'x': Math.random(), 'y': Math.random()}
             .enter()
             .append('circle')
-            .attr({cx: options.width / 2, cy: options.height / 2, r: 10, fill: 'orange'})
-            // .attr('transform', 'translate(' + 222 + ',' + 222 + ')')
+            .attr({cx: options.width / 2, cy: options.height / 2, r: 20, fill: 'orange'})
             .classed('player', true);
 
 
@@ -88,7 +90,59 @@ d3.behavior.drag()  // capture mouse drag event
     .call(d3.select('.player'));
 
 
+//Collisions
+var collision = function(thisCircle, otherCircle) {
+  console.log('Collision at: ' + thisCircle.attr('cx') + ',' + thisCircle.attr('cy'));
+};
+
+var collisionDetection = function() {
+  return function() {
+    var thisCircle = d3.select('.player');
+    enemies.each(function() {
+      var otherCircle = d3.select(this);
+
+      dx = thisCircle.attr('cx') - otherCircle.attr('cx'),
+      dy = thisCircle.attr('cy') - otherCircle.attr('cy'),
+      distance = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
+
+      if (distance < +thisCircle.attr('r') + +otherCircle.attr('r')) {
+        //stats.collisions++;
+        collision(thisCircle, otherCircle);
+        setTimeout(function() {
+          stats.collisions++;
+        }, 1000);
+
+        if (stats.score > stats.highScore) {
+          stats.highScore = stats.score;
+          d3.select('.highscore span')
+            .text(stats.score);
+
+          stats.score = 0;
+          d3.select('.current span')
+            .text(0);
+
+
+        }
+        //return true;
+      }
+    });
+  };
+};
+
+
+
+
 // Updating Score
+//if there is a collision and current score is greater than the high score
+//then we set the high score to current, and current to zero.
+// var updateHighScore = function() {
+//   if (collisionDetection && stats.current > stats.bestScore) {
+//     stats.bestScore = stats.current;
+//     stats.current = 0;
+//   }
+
+// };
+
 
 setInterval(function() {
   stats.score++;
@@ -99,10 +153,11 @@ var updateStats = function() {
   d3.select('.current span')
     .text(stats.score);
 
-  // d3.select('.collisions span')
-  //   .text(stats.collisions);
+  d3.select('.collisions span')
+    .text(stats.collisions);
 };
 
 setInterval(function() {
   updateStats();
-}, 50);
+}, 1000);
+
